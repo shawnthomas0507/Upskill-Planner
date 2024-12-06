@@ -3,7 +3,7 @@ from langchain_groq import ChatGroq
 from langgraph.graph import START,END,MessagesState,StateGraph
 from langgraph.prebuilt import ToolNode,tools_condition
 from langchain_core.messages import HumanMessage,AIMessage,SystemMessage
-from tools import extract_skills
+from tools import extract_skills,timetable_agent
 
 llm = ChatGroq(
     temperature=0,
@@ -12,11 +12,11 @@ llm = ChatGroq(
 )
 
 
-tools = [extract_skills]
+tools = [extract_skills,timetable_agent]
 llm_with_tools=llm.bind_tools(tools=tools)
 
 def agent(state:MessagesState):
-    return {"messages":[llm_with_tools.invoke(state["messages"]+[SystemMessage(content="You are an intelligent general assistant that is able to answer any question. Just remember if the user asks whether he can upload a resume just tell him he can upload the resume in the sidebar ")])]}
+    return {"messages":[llm_with_tools.invoke(state["messages"]+[SystemMessage(content="You are an intelligent general assistant that is able to answer any question. Just remember if the user asks whether he can upload a resume just tell him he can upload the resume in the sidebar. If the user asks to build a timetable first ask what is his daily schedule. What does he do during the day? Do not ask anything further. ")])]}
 
 
 graph=StateGraph(MessagesState)

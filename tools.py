@@ -1,7 +1,7 @@
 from PyPDF2 import PdfReader
 from langchain_core.tools import tool
 from langchain_groq import ChatGroq
-from classes import Info
+from classes import Info,Timetable
 from langchain_core.messages import HumanMessage,AIMessage,SystemMessage
 import streamlit as st
 
@@ -16,7 +16,7 @@ llm = ChatGroq(
 def extract_skills(text):
     """
     argument: text
-    This tool is used to extract the skills from a resume.Call this tool when the user asks for the skills.
+    This tool is used to extract the skills from a resume.Call this tool when the user asks for the anything related to the resume.
     """
     
     instructions="""
@@ -30,3 +30,16 @@ def extract_skills(text):
     return response.Information
 
 
+
+def timetable_agent(text):
+    """
+    argument:text
+    This tool is used to create a daily timetable for the user based on the missing skills, tools and projects. This tool is only called when the user asks anything related to a timetable.
+    """
+    instructions="""
+    You are an assistant that reads in the user's text containing his daily schedule. You need to extract the time slots and the tasks to be done in the time slots from the text.
+    The user's text is as follows: {text}
+    """
+    sys_message=instructions.format(text=text)
+    response=llm.with_structured_output(Timetable).invoke([SystemMessage(content=sys_message)])
+    return response.to_dataframe()

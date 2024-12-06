@@ -9,7 +9,7 @@ if "messages" not in st.session_state:
 if "uploaded_file" not in st.session_state:
     st.session_state.uploaded_file = None
 
-st.title("🤖 Resume Skills Extractor")
+st.title("🤖 Upskill Planner")
 
 st.sidebar.title("Upload Resume")
 uploaded_file = st.sidebar.file_uploader("Choose a PDF file", type="pdf")
