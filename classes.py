@@ -1,6 +1,6 @@
 from typing import List
 from pydantic import BaseModel,Field
-
+import pandas as pd
 
 class Info(BaseModel):
     skills: str=Field(
@@ -18,3 +18,17 @@ class Info(BaseModel):
 
 
 
+class objects(BaseModel):
+    time_slot: str=Field(
+        description="Time slot of the task"
+    )
+    task: str=Field(
+        description="Task to be done in the time slot"
+    )
+
+class Timetable(BaseModel):
+    work: List[objects]=Field(
+        description="comprehensive list of tasks and their time slots"
+    )
+    def to_dataframe(self) -> pd.DataFrame:
+        return pd.DataFrame(self.dict()["work"])
