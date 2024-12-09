@@ -1,6 +1,14 @@
-from typing import List
+from typing import List,Annotated,TypedDict
 from pydantic import BaseModel,Field
 import pandas as pd
+from langchain_core.messages import SystemMessage,AIMessage,HumanMessage,BaseMessage
+from langgraph.graph.message import add_messages
+
+class MessagesState(TypedDict):
+    messages: Annotated[list[BaseMessage],add_messages]
+    skills_agent_output: str
+    name: str
+    path: str
 
 class Info(BaseModel):
     skills: str=Field(
@@ -8,9 +16,6 @@ class Info(BaseModel):
     )
     projects: str=Field(
         description="projects done by the person"
-    )
-    role: str=Field(
-        description="Role of the analyst in the context of the topic."
     )
     @property
     def Information(self)->str:
@@ -31,4 +36,7 @@ class Timetable(BaseModel):
         description="comprehensive list of tasks and their time slots"
     )
     def to_dataframe(self) -> pd.DataFrame:
-        return pd.DataFrame(self.dict()["work"])
+        return pd.DataFrame(self.dict())
+
+
+
