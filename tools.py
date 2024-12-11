@@ -61,7 +61,7 @@ def timetable_agent(text):
 
 
 def rag_retrieval(state:MessagesState):
-    user_query=state["user_query"][-1]
+    user_query=state["user_query"]
     response = qa_chain.run(user_query)
     instructions="""
     You are an intelligent assistant that is able to answer questions about the resume.
@@ -70,7 +70,7 @@ def rag_retrieval(state:MessagesState):
     The user_query is as follows: {user_query}
     """
     sys_message=instructions.format(user_query=user_query,context=response)
-    response=llm.with_structured_output(Info).invoke([SystemMessage(content=sys_message)])
+    response=llm.invoke([SystemMessage(content=sys_message)])
     return {"messages":response.content}
 
 
