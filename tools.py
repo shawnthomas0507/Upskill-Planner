@@ -5,6 +5,7 @@ from classes import Info,Timetable
 from langchain_core.messages import HumanMessage,AIMessage,SystemMessage
 import streamlit as st
 from classes import MessagesState
+from read_rag import qa_chain
 
 llm = ChatGroq(
     temperature=0,
@@ -58,4 +59,22 @@ def timetable_agent(text):
     response1=llm.with_structured_output(Timetable).invoke([SystemMessage(content=sys_message)])
     return response1.to_dataframe()
 
-    
+
+def rag_retrieval(state:MessagesState):
+    user_query=state["user_query"]
+    response = qa_chain.run(user_query)
+    instructions="""
+    You are an intelligent assistant that is able to answer questions about the resume.
+    You will be given a context and the user query. Using the context ask the user's query.
+    The context is as follows: {context}
+    The user_query is as follows: {user_query}
+    """
+    sys_message=instructions.format(user_query=user_query,context=response)
+    response=llm.invoke([SystemMessage(content=sys_message)])
+    return {"messages":response.content}
+
+
+
+
+
+

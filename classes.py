@@ -9,7 +9,8 @@ class MessagesState(TypedDict):
     skills_agent_output: str
     name: str
     path: str
-
+    user_query: str
+    
 class Info(BaseModel):
     skills: str=Field(
         description="skills of the person"
