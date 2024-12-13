@@ -3,6 +3,9 @@ from pydantic import BaseModel,Field
 import pandas as pd
 from langchain_core.messages import SystemMessage,AIMessage,HumanMessage,BaseMessage
 from langgraph.graph.message import add_messages
+from datetime import datetime
+from typing import Optional
+
 
 class MessagesState(TypedDict):
     messages: Annotated[list[BaseMessage],add_messages]
@@ -38,6 +41,20 @@ class Timetable(BaseModel):
     )
     def to_dataframe(self) -> pd.DataFrame:
         return pd.DataFrame(self.dict())
+    
+
+class event(BaseModel):
+
+    tool: str=Field(description="the tool to be learnt")
+    start: datetime=Field(description="what does the time slot start")
+    location: str=Field(description="location of the user")
+
+    @property
+    def repr(self) -> str:
+        return (
+            f"Event('{self.tool}', start={self.start}, location='{self.location}')"
+        )
+
 
 
 
