@@ -7,7 +7,7 @@ from langchain_core.messages import HumanMessage,AIMessage,SystemMessage
 from langgraph.checkpoint.memory import MemorySaver
 from read_rag import qa_chain
 from rag import insert_rag
-from tools import rag_retrieval,timetable_agent,calendar
+from tools import rag_retrieval,timetable_agent,calendar,get_events
 
 llm = ChatGroq(
     temperature=0,
@@ -37,6 +37,17 @@ def human_feedback(state:MessagesState):
        user_input=input("Enter your query:")
        return {"messages":user_input,"user_query":user_input}
 
+def human_feedback1(state:MessagesState):
+       user_input1=input("Did you like this timetable? Shall I schedule it in google calendar ? Say yes if you want your timetable changed else say no and how you would like me to change it:")
+       return {"messages":user_input1}
+
+def router(state:MessagesState):
+    msg=state["messages"][-1]
+    if "yes" in msg.content:
+        return "calendar_node"
+    elif "no" in msg.content:
+        return "timetable_node"
+
 def save_rag(state:MessagesState):
     path=state["path"]
     insert_rag(path)
@@ -65,6 +76,8 @@ def should_continue(state:MessagesState):
         return END
       elif message.content=="rag_node":
         return "rag_node"
+      elif message.content=="get_events":
+          return "get_events_node"
       elif message.content=="timetable_node":
           return "timetable_node"
       else:
@@ -81,13 +94,17 @@ graph.add_node("human_feedback",human_feedback)
 graph.add_node("rag_node",rag_retrieval)
 graph.add_node("timetable_node",timetable_agent)
 graph.add_node("calendar_node",calendar)
+graph.add_node("get_events_node",get_events)
+graph.add_node("human_feedback_2",human_feedback1)
 graph.add_conditional_edges(START,check_rag_for_resume)
 graph.add_edge("path_to_pdf","save_rag")
 graph.add_edge("save_rag","human_feedback")
 graph.add_edge("human_feedback","agent")
-graph.add_conditional_edges("agent",should_continue,[END, "human_feedback","rag_node","timetable_node"])
+graph.add_conditional_edges("agent",should_continue,[END, "human_feedback","rag_node","timetable_node","get_events_node"])
+graph.add_edge("get_events_node","human_feedback")
 graph.add_edge("rag_node","human_feedback")
-graph.add_edge("timetable_node","calendar_node")
+graph.add_edge("timetable_node","human_feedback_2")
+graph.add_conditional_edges("human_feedback_2",router)
 graph.add_edge("calendar_node",END)
 memory=MemorySaver()
 app=graph.compile(checkpointer=memory)

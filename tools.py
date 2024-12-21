@@ -16,6 +16,22 @@ llm = ChatGroq(
     model="llama-3.1-70b-versatile"
 )
 
+def get_events(state:MessagesState):
+    calendar = GoogleCalendar('shawnthomas0507@gmail.com')
+    events=[]
+    for event in calendar:
+        events.append(event)
+    instructions="""
+    You are an intelligent assistant. You will be given a list of events of a google calendar.You have to tell the user the events scheduled in his calendar in a concise way.
+    The events list is {events}
+    """
+    sys_message=instructions.format(events=events)
+    response=llm.invoke([SystemMessage(content=sys_message)])
+    return {"messages":[AIMessage(content=response.content)]}
+
+
+
+
 
 def timetable_agent(state:MessagesState):   
     user_query=state["messages"][-2] 
@@ -37,7 +53,7 @@ def timetable_agent(state:MessagesState):
     """
     sys_message=instructions.format(user_timetable=response.content)
     response1=llm.invoke(state["messages"]+[SystemMessage(content=sys_message)])
-    return {"messages":response1.content}
+    return {"messages":[AIMessage(content=response1.content)]}
 
 
 def rag_retrieval(state:MessagesState):
@@ -51,12 +67,12 @@ def rag_retrieval(state:MessagesState):
     """
     sys_message=instructions.format(user_query=user_query,context=response)
     response=llm.invoke([SystemMessage(content=sys_message)])
-    return {"messages":response.content}
+    return {"messages":[AIMessage(content=response.content)]}
 
 
 
 def calendar(state:MessagesState):
-    tool=state["messages"][-1]
+    tool=state["messages"][-2].content
     instructions="""
     You are an intelligent assistant. You will be given a sentence. 
     You should extract the tool to be learnt from it and the time the tool will be learnt. Also the location to learn this tool is philadelphia.
@@ -97,7 +113,7 @@ def calendar(state:MessagesState):
     str1+=str3
     event_str = "\n".join([line.strip() for line in str1.splitlines()])
     exec(event_str)
-    return {"messages":" I have successfully created an event for you in google calendar to study this skill. Good Luck !"}
+    return {"messages":[AIMessage(content=" I have successfully created an event for you in google calendar to study this skill. Good Luck !")]}
 
 
 
